@@ -9,14 +9,32 @@ public class PlayerControllerScript : MonoBehaviour
     private float nextFire;
     public float fireRate;
 
+    int missileCount;
+    Quaternion missileRotation;
+
     public GameObject Projectile;
+    public GameObject Missile;
+
+    public GameObject explosion;
+
+    void Awake()
+    {
+        missileCount = 3;
+        missileRotation = Quaternion.Euler(0, 0, 90);
+    }
 
     void Update()
     {
-        if(Input.GetButton("Fire1") && Time.time > nextFire)
+        if (Input.GetButton("Fire1") && Time.time > nextFire)
         {
             nextFire = Time.time + fireRate;
             Instantiate(Projectile, transform.position, Quaternion.identity);
+        }
+        if (Input.GetButton("Fire2") && Time.time > nextFire && missileCount != 0)
+        {
+            nextFire = Time.time + fireRate;
+            Instantiate(Missile, transform.position, missileRotation);
+            missileCount--;
         }
     }
 
@@ -37,8 +55,9 @@ public class PlayerControllerScript : MonoBehaviour
     }
     void OnTriggerEnter(Collider other)
     {
-        if (other.tag != "Projectile")
+        if (other.tag == "Enemy" || other.tag == "Enemy_Projectile")
         {
+            Instantiate(explosion, transform.position, Quaternion.identity);
             Destroy(other.gameObject);
             Destroy(this.gameObject);
         }

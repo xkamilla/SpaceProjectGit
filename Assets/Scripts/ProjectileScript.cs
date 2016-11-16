@@ -3,12 +3,7 @@ using System.Collections;
 
 public class ProjectileScript : MonoBehaviour
 {
-    float speed;
-
-    void Awake()
-    {
-        speed = 15.0f;
-    }
+    public float speed;
 
     void Update()
     {
@@ -17,10 +12,11 @@ public class ProjectileScript : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if(other.tag != "Player")
+        if (other.tag == "Enemy")
         {
             Destroy(other.gameObject);
             Destroy(this.gameObject);
         }
+        
     }
 }
