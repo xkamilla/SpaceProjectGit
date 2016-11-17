@@ -9,7 +9,7 @@ public class PlayerControllerScript : MonoBehaviour
     private float nextFire;
     public float fireRate;
 
-    int missileCount;
+    public int missileCount;
     Quaternion missileRotation;
 
     public GameObject Projectile;
@@ -17,18 +17,20 @@ public class PlayerControllerScript : MonoBehaviour
 
     public GameObject explosion;
 
+    public int playerShield;
+
     void Awake()
     {
-        missileCount = 3;
-        missileRotation = Quaternion.Euler(0, 0, 90);
-    }
+        missileRotation = Quaternion.Euler(0, 0, 180);
+        playerShield = 1;
+}
 
-    void Update()
+void Update()
     {
         if (Input.GetButton("Fire1") && Time.time > nextFire)
         {
             nextFire = Time.time + fireRate;
-            Instantiate(Projectile, transform.position, Quaternion.identity);
+            Instantiate(Projectile, transform.position + new Vector3(0.694f, 0.0f, -0.305f), missileRotation);
         }
         if (Input.GetButton("Fire2") && Time.time > nextFire && missileCount != 0)
         {
@@ -55,11 +57,33 @@ public class PlayerControllerScript : MonoBehaviour
     }
     void OnTriggerEnter(Collider other)
     {
-        if (other.tag == "Enemy" || other.tag == "Enemy_Projectile")
+        if (other.tag == "Enemy" || other.tag == "EnemyProjectile")
         {
-            Instantiate(explosion, transform.position, Quaternion.identity);
+            if (playerShield == 0)
+            {
+                Instantiate(explosion, transform.position, Quaternion.identity);
+                Destroy(this.gameObject);
+            }
             Destroy(other.gameObject);
-            Destroy(this.gameObject);
+            playerShield--;
+        }
+        else if (other.tag == "PickUp")
+        {
+            switch(other.name)
+            {
+                case "Missile":
+                    missileCount++;
+                    Destroy(other.gameObject);
+                    break;
+                case "ShieldBooster":
+                    break;
+                case "Invicibility":
+                    break;
+                case "StarDestroyer":
+                    break;
+                default:
+                    break;
+            }
         }
     }
 }

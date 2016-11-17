@@ -6,14 +6,20 @@ public class EnemyBehaviourScript : MonoBehaviour
 
     public float speed;
     float randomValue;
+    float randomValue2;
     float numberTimer;
     float nextTurnIn;
+    GameObject GameController;
+    GameControllerScript GCScript;
 
     void Awake()
     {
         randomValue = Random.Range(-0.4f, 0.4f);
         nextTurnIn = 2.0f;
         numberTimer = nextTurnIn;
+
+        GameController = GameObject.Find("GameController");
+        GCScript = GameController.GetComponent<GameControllerScript>();
     }
 
 	void Update ()
@@ -37,4 +43,13 @@ public class EnemyBehaviourScript : MonoBehaviour
             numberTimer -= Time.deltaTime;
         }
 	}
+    void OnDestroy()
+    {
+        randomValue2 = Random.Range(0.0f,1.0f);
+        Debug.Log(randomValue2);
+        if (randomValue2 <= 0.2f)
+        {
+            GCScript.DropItem(transform.position);
+        }
+    }
 }
