@@ -3,28 +3,21 @@ using System.Collections;
 
 public class ProjectileScript : MonoBehaviour
 {
-    public float speed;
-    GameObject GameController;
-    GameControllerScript GCScript;
+    //public float speed;
+    public GameObject ExplosionHandler;
 
-    void Awake()
-    {
-        GameController = GameObject.Find("GameController");
-        GCScript = GameController.GetComponent<GameControllerScript>();
-    }
+
 
     void Update()
     {
-        transform.position += -transform.right * speed * Time.deltaTime;
+        //transform.position += -transform.right * speed * Time.deltaTime;
     }
 
-    void OnTriggerEnter(Collider other)
+    /*void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Enemy")
         {
-            GCScript.UpdateScore(20);
-            GCScript.UpdateSP(1);
-
+            Instantiate(ExplosionHandler, transform.position, Quaternion.identity);
             Destroy(other.gameObject);
             Destroy(this.gameObject);
         }
@@ -32,5 +25,5 @@ public class ProjectileScript : MonoBehaviour
         {
             Destroy(gameObject);
         }
-    }
+    }*/
 }

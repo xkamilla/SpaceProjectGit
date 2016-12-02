@@ -3,11 +3,10 @@ using System.Collections;
 
 public class EnemyProjectileScript : MonoBehaviour
 {
-    float speed;
+    public float speed;
 
     void Awake()
     {
-        speed = 15.0f;
     }
 
     void Update()
