@@ -149,11 +149,7 @@ public class ProjectileCollisionBehaviour : MonoBehaviour
             if (hit.collider.transform.tag == "Enemy")
             {
                 BehaviourScript bScript = hit.collider.GetComponent<BehaviourScript>();
-                bScript.DamageTaken(false);
-            }
-            else if (hit.collider.transform.tag == "EnemyProjectile")
-            {
-                Destroy(hit.collider.gameObject);
+                bScript.DamageTaken();
             }
             endPoint = raycastHit.point - direction * effectSettings.ColliderRadius;
       CollisionEnter();

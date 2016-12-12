@@ -20,6 +20,9 @@ public class BehaviourScript : MonoBehaviour
     GameObject UIObject;
     TommiGUIScript TGScript;
 
+    public GameObject newAsteroid;
+    GameObject theAsteroid;
+
     //GameObject playerObject;
     //PlayerControllerScript PlayerController;
 
@@ -64,23 +67,23 @@ public class BehaviourScript : MonoBehaviour
         }
     }*/
 
-    public void DamageTaken(bool instaDeath)
+    public void DamageTaken()
     {
-        if (!instaDeath)
+        health -= 1;
+        if(health <= 0)
         {
-            health -= 1;
-            if (health <= 0)
+            if (gameObject.name == "Asteroid(Clone)")
             {
-                ScoreDropScript.GiveScoreAndSP();
-
-                //TGScript.Räjähdys(transform.position);
-
-                Instantiate(ExplosionHandler, transform.position, Quaternion.identity);
+                for(int i = 0; i < 5; i++)
+                {
+                    theAsteroid = Instantiate(newAsteroid, transform.position, Quaternion.Euler(0, -30 + (-100 / 5 * i), 0)) as GameObject;
+                    theAsteroid.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+                    EnemyAIScript AIScript = theAsteroid.GetComponent<EnemyAIScript>();
+                    AIScript.speed = Random.Range(2, 10);
+                }
             }
-        }
-        else
-        {
             ScoreDropScript.GiveScoreAndSP();
+
             Instantiate(ExplosionHandler, transform.position, Quaternion.identity);
         }
     }

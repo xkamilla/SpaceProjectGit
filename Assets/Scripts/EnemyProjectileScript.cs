@@ -11,6 +11,14 @@ public class EnemyProjectileScript : MonoBehaviour
 
     void Update()
     {
-        transform.position += -transform.right * speed * Time.deltaTime;
+        transform.position += transform.forward * speed * Time.deltaTime;
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        if(other.tag == "Hazard")
+        {
+            Destroy(gameObject);
+        }
     }
 }

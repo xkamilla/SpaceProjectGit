@@ -3,12 +3,19 @@ using System.Collections;
 
 public class EnemyAIScript : MonoBehaviour
 {
+    public enum shootingType
+    {
+        straight,
+        fan,
+        atPlayer
+    }
+
     float xMin, xMax, zMin, zMax;
 
     public bool shoots;
     public bool shootsMissiles;
     bool missilesNow;
-    public bool versatileMoving;
+    bool versatileMoving;
     public bool rotating;
     public float rotatingSpeed;
     public float speed;
@@ -17,12 +24,16 @@ public class EnemyAIScript : MonoBehaviour
     public float shootCoolDown;
     public int howManyShots;
 
+    public shootingType shootPattern;
+
     float randomValue;
     float numberTimer;
     bool timerRunning;
 
     public GameObject BulletPrefab;
     public GameObject MissilePrefab;
+    Quaternion bulletRotation;
+    GameObject bullet;
 
     int i = 0;
 
@@ -35,12 +46,12 @@ public class EnemyAIScript : MonoBehaviour
 
         xMin = -15.0f;
         xMax = 40.0f;
-        zMin = -9.5f;
+        zMin = -9.0f;
         zMax = 9.0f;
 
         numberTimer = shootCoolDown / 2;
     }
-    void FixedUpdate()
+    void Update()
     {
         transform.position = new Vector3(
             Mathf.Clamp(transform.position.x, xMin, xMax),
@@ -84,7 +95,29 @@ public class EnemyAIScript : MonoBehaviour
         {
             yield return new WaitForSeconds(timeBetweenBullets);
 
-            Instantiate(BulletPrefab, transform.position, Quaternion.identity);
+
+            if(shootPattern == shootingType.straight)
+            {
+                bullet = Instantiate(BulletPrefab, transform.position, Quaternion.identity) as GameObject;
+                bullet.transform.rotation = Quaternion.Euler(0, -90, 0);
+            }
+            else if (shootPattern == shootingType.atPlayer)
+            {
+                GameObject player = GameObject.FindWithTag("Player");
+                if (player != null)
+                {
+                    bullet = Instantiate(BulletPrefab, transform.position, Quaternion.identity) as GameObject;
+                    bullet.transform.LookAt(player.transform);
+                }
+            }
+            else if (shootPattern == shootingType.fan)
+            {
+                for (int j = 1; j <= 4; j++)
+                {
+                    bullet = Instantiate(BulletPrefab, transform.position, Quaternion.identity) as GameObject;
+                    bullet.transform.rotation = Quaternion.Euler(0, -30 + (-100 / 4 * j), 0);
+                }
+            }
 
             i++;
         }
@@ -94,9 +127,16 @@ public class EnemyAIScript : MonoBehaviour
         {
             yield return new WaitForSeconds(3);
 
-            Instantiate(MissilePrefab, transform.position, Quaternion.identity);
-
+            Instantiate(MissilePrefab, transform.position, Quaternion.Euler(0, -90, 0));
         }
         timerRunning = true;
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        /*if(other.tag == "Hazard")
+        {
+            randomValue = Random.Range(0.2f, 0.7f);
+        }*/
     }
 }
