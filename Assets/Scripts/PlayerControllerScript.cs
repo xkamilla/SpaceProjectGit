@@ -8,8 +8,8 @@ public class PlayerControllerScript : MonoBehaviour
     public float playerSpeed;
     float maxPlayerSpeed;
 
-    public float currentPlayerShield;
-    public int playerShield;
+    float currentPlayerShield;
+    int playerShield;
     int maxPlayerShield;
 
     bool chargeShield;
@@ -44,25 +44,36 @@ public class PlayerControllerScript : MonoBehaviour
     GameObject TGSObject;
     TommiGUIScript TGScript;
 
+    AudioSource ASource;
+
     public GameObject LaserHandler;
 
     int chosenUpgradeId;
 
     float timer = 0.0f;
     float upgradeTimer = 0.0f;
-    bool upgradeTimerRunning; 
+    bool upgradeTimerRunning;
+    float invicibilityTimer = 0.0f;
+
+    public bool immortalPlayer;
 
     void Awake()
     {
         GameController = GameObject.Find("GameController");
         GControllerScript = GameController.GetComponent<GameControllerScript>();
 
-        //TGSObject = GameObject.Find("UI");
-        //TGScript = TGSObject.GetComponent<TommiGUIScript>();
+        TGSObject = GameObject.Find("UI");
+        TGScript = TGSObject.GetComponent<TommiGUIScript>();
 
-        //playerShield = 0;
+        if (FindObjectsOfType(GetType()).Length > 1)
+        {
+            Destroy(gameObject);
+        }
+
+        DontDestroyOnLoad(this);
+
+        playerShield = 0;
         currentPlayerShield = playerShield;
-        //shieldInt = currentPlayerShield
         maxPlayerSpeed = 35.0f;
         maxPlayerShield = 4;
         chargeShield = true;
@@ -85,9 +96,13 @@ public class PlayerControllerScript : MonoBehaviour
 
     void Update()
     {
+        if (invicibilityTimer > 0)
+        {
+            invicibilityTimer -= Time.deltaTime;
+        }
         timer += Time.deltaTime;
 
-        if (Input.GetButtonUp("Fire1") && timer >= fireRate)
+        if (Input.GetButton("Fire1") && timer >= fireRate)
         {
             Instantiate(LaserHandler, transform.position + new Vector3(0.694f, 0.0f, -0.305f), Quaternion.identity);
             timer = 0.0f;
@@ -112,79 +127,22 @@ public class PlayerControllerScript : MonoBehaviour
 
             if (Input.GetButtonUp("Upgrade1"))
             {
-                if (playerShield < maxPlayerShield)
-                {
-                    chosenUpgradeId = 1;
-                    bool approved = GControllerScript.BuyUpgrade(chosenUpgradeId);
-                    Debug.Log(approved);
-                    if (approved)
-                    {
-                        playerShield++;
-                        Debug.Log("Max Shield: " + playerShield);
-                    }
-                }
-                else
-                {
-                    Debug.Log("You have reached maximum");
-                }
+                Upgrade1();
             }
             else if (Input.GetButtonUp("Upgrade2"))
             {
-                if (playerSpeed < maxPlayerSpeed)
-                {
-                    chosenUpgradeId = 2;
-                    bool approved = GControllerScript.BuyUpgrade(chosenUpgradeId);
-                    Debug.Log(approved);
-                    if (approved)
-                    {
-                        playerSpeed += 4.0f;
-                        Debug.Log("Speed: " + playerSpeed);
-                    }
-                }
-                else
-                {
-                    Debug.Log("You have reached maximum");
-                }
+                Upgrade2();
             }
             else if (Input.GetButtonUp("Upgrade3"))
             {
-                if (strengthLevel < maxStrengthLevel)
-                {
-                    chosenUpgradeId = 3;
-                    bool approved = GControllerScript.BuyUpgrade(chosenUpgradeId);
-                    if (approved)
-                    {
-                        strengthLevel++;
-                        scale += new Vector3(0.3f, 0.3f, 0.3f);
-                        fireRate -= 0.1f;
-                    }
-                }
-                else
-                {
-                    Debug.Log("You have reached maximum");
-                }
+                Upgrade3();
             }
             else if (Input.GetButtonUp("Upgrade4"))
             {
-                if (missileCount < maxMissileCount)
-                {
-                    chosenUpgradeId = 4;
-                    bool approved = GControllerScript.BuyUpgrade(chosenUpgradeId);
-                    if (approved)
-                    {
-                        missileCount++;
-                    }
-                }
-                else
-                {
-                    Debug.Log("You have reached maximum");
-                }
+                Upgrade4();
             }
         }
-    }
 
-    void FixedUpdate()
-    {
         //Debug.Log("Shield is: " + currentPlayerShield + " from " + playerShield);
         float moveHorizontal = Input.GetAxis("Horizontal");
         float moveVertical = Input.GetAxis("Vertical");
@@ -210,22 +168,35 @@ public class PlayerControllerScript : MonoBehaviour
 
 
         CheckShieldInt();
-        //TGScript.ShieldCheck(shieldInt);
+        TGScript.ShieldCheck(shieldInt);
+		if (Input.GetKeyDown (KeyCode.Space)) 
+		{
+			PopupTextManager.Instance.CreateText (transform.position);
+		}
     }
     void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Enemy" || other.tag == "EnemyProjectile")
         {
             shieldTimer = 0.0f;
-            currentPlayerShield = Mathf.Floor(currentPlayerShield) - 1;
+
+            if (invicibilityTimer <= 0)
+            {
+                if (!immortalPlayer)
+                {
+                    currentPlayerShield = Mathf.Floor(currentPlayerShield) - 1;
+                }
+                //ASource.Play();
+                //ship.enabled = true;
+                invicibilityTimer = 2.0f;
+            }
 
             if (currentPlayerShield < 0)
             {
                 PlayerDies();
             }
-            Destroy(other.gameObject);
         }
-        else if(other.tag == "Terrain")
+        else if(other.tag == "Hazard")
         {
             PlayerDies();
         }
@@ -243,8 +214,7 @@ public class PlayerControllerScript : MonoBehaviour
                     break;
                 case "SBoosterPF":
                     Debug.Log("Shield Booster");
-                    rechargeTime = rechargeTime + 0.5f;
-                    booster = true;
+                    //currentPlayerShield = playerShield;
                     Destroy(other.gameObject);
                     break;
                 case "InvicibilityPF":
@@ -297,5 +267,76 @@ public class PlayerControllerScript : MonoBehaviour
         Instantiate(ExplosionHandler, transform.position, Quaternion.identity);
         GControllerScript.GameOver();
         Destroy(gameObject);
+    }
+
+    void Upgrade1()
+    {
+        if (playerShield < maxPlayerShield)
+        {
+            chosenUpgradeId = 1;
+            bool approved = GControllerScript.BuyUpgrade(chosenUpgradeId);
+            Debug.Log(approved);
+            if (approved)
+            {
+                playerShield++;
+                Debug.Log("Max Shield: " + playerShield);
+            }
+        }
+        else
+        {
+            Debug.Log("You have reached maximum");
+        }
+    }
+    void Upgrade2()
+    {
+        if (playerSpeed < maxPlayerSpeed)
+        {
+            chosenUpgradeId = 2;
+            bool approved = GControllerScript.BuyUpgrade(chosenUpgradeId);
+            Debug.Log(approved);
+            if (approved)
+            {
+                playerSpeed += 4.0f;
+                Debug.Log("Speed: " + playerSpeed);
+            }
+        }
+        else
+        {
+            Debug.Log("You have reached maximum");
+        }
+    }
+    void Upgrade3()
+    {
+        if (strengthLevel < maxStrengthLevel)
+        {
+            chosenUpgradeId = 3;
+            bool approved = GControllerScript.BuyUpgrade(chosenUpgradeId);
+            if (approved)
+            {
+                strengthLevel++;
+                scale += new Vector3(0.3f, 0.3f, 0.3f);
+                fireRate -= 0.1f;
+            }
+        }
+        else
+        {
+            Debug.Log("You have reached maximum");
+        }
+    }
+    void Upgrade4()
+    {
+        if (missileCount < maxMissileCount)
+        {
+            chosenUpgradeId = 4;
+            bool approved = GControllerScript.BuyUpgrade(chosenUpgradeId);
+            if (approved)
+            {
+                missileCount++;
+            }
+        }
+        else
+        {
+            Debug.Log("You have reached maximum");
+        }
     }
 }

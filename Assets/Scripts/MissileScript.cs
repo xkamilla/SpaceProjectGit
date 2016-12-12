@@ -24,8 +24,6 @@ public class MissileScript : MonoBehaviour
 
     public void ProjectileExplosion()
     {
-        Instantiate(MissileExplosion, transform.position, Quaternion.identity);
-
         Explosion = Instantiate(MissileExplosion, transform.position, Quaternion.identity) as GameObject;
         Explosion.transform.localScale = Vector3.Scale(Explosion.transform.localScale, transform.localScale);
 

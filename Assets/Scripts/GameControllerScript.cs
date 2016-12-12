@@ -9,8 +9,10 @@ public class GameControllerScript : MonoBehaviour
     public int score;
     public int SPCount;
 
-    int highScore;
+    public int highScore;
     string highScoreKey = "High Score";
+
+    public GameObject PlayerPF;
 
     public float MissileDropChance;
     public float SBoosterDropChance;
@@ -22,6 +24,10 @@ public class GameControllerScript : MonoBehaviour
     public GameObject InvincibilityPrefab;
     public GameObject SDestroyerPrefab;
 
+    public GameObject BossHandler;
+
+    public bool includeBoss;
+
     GameObject PlayerController;
     PlayerControllerScript PlayerCScript;
 
@@ -32,41 +38,55 @@ public class GameControllerScript : MonoBehaviour
 
     int price;
 
-    bool gameOver = false;
+    public bool spawnEnemies;
 
-    /// HUOMIO! Pelaajan shield löytyy PlayerController Scriptistä
-    /// Sen arvon saa kirjoittamalla:
-    /// PlayerCScript.playerShield;
+    bool boss;
+    bool gameOver = false;
+    int level;
 
     void Awake()
     {
         Time.timeScale = 1.0f;
 
-        //score = 0;
-        //SPCount = 0;
+        score = 0;
+        SPCount = 0;
 
-        highScore = PlayerPrefs.GetInt(highScoreKey, 0);
+        if (FindObjectsOfType(GetType()).Length > 1)
+        {
+            Destroy(gameObject);
+        }
 
-        PlayerPrefs.DeleteAll();
+        DontDestroyOnLoad(this);
 
-        PlayerController = GameObject.Find("PlayerPrefab");
+        PlayerController = Instantiate(PlayerPF, new Vector3(0, 0, 0), Quaternion.identity) as GameObject;
+
         PlayerCScript = PlayerController.GetComponent<PlayerControllerScript>();
 
-        //UIObject = GameObject.Find("UI");
-        //TGScript = UIObject.GetComponent<TommiGUIScript>();
-        //TGScript.UpdateHighScore(PlayerPrefs.GetInt(highScoreKey, 0));
+        UIObject = GameObject.Find("UI");
+        TGScript = UIObject.GetComponent<TommiGUIScript>();
 
         ESScript = gameObject.GetComponent<EnemySpawnScript>();
+
+        level = 1;
     }
+    void Start()
+    {
+        TGScript.UpdateHighScore();
+    }
+
     void Update()
     {
-        if(gameOver)
+        if (gameOver)
         {
             //Gameover teksti
-            if(Input.GetButton("Respawn"))
+            if (Input.GetButton("Respawn"))
             {
-                SceneManager.LoadScene("Game");
-                Debug.Log("Main menu?");
+                score = 0;
+                SPCount = 0;
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+                Instantiate(PlayerPF, new Vector3(0,0,0), Quaternion.identity);
+                TGScript.UpdateUIScore(score);
+                TGScript.UpdateUISP(SPCount);
             }
         }
     }
@@ -75,30 +95,30 @@ public class GameControllerScript : MonoBehaviour
         Debug.Log("Press R to respawn");
         Debug.Log("Game Over");
 
-        ESScript.spawnEnemies = false;
+        spawnEnemies = false;
         Time.timeScale = 0.3f;
 
         Debug.Log("Previous high score: " + PlayerPrefs.GetInt(highScoreKey, 0));
         Debug.Log("Current score: " + score);
-        if (score > highScore)
+        if (score > PlayerPrefs.GetInt(highScoreKey))
         {
             PlayerPrefs.SetInt(highScoreKey, score);
             PlayerPrefs.Save();
             Debug.Log("New highscore! " + PlayerPrefs.GetInt(highScoreKey));
-            //TGScript.UpdateHighScore(PlayerPrefs.GetInt(highScoreKey, 0));
+            TGScript.UpdateHighScore();
         }
         gameOver = true;
-        
+
     }
     public void UpdateScore(int points)
     {
         score += points;
-        //TGScript.UpdateUIScore(int score);
+        TGScript.UpdateUIScore(score);
     }
     public void UpdateSP(int parts)
     {
         SPCount += parts;
-        //TGScript.UpdateUISP(int SPCount);
+        TGScript.UpdateUISP(SPCount);
     }
     public void DropItem(Vector3 position)
     {
@@ -128,7 +148,7 @@ public class GameControllerScript : MonoBehaviour
     public bool BuyUpgrade(int id)
     {
         bool upgradeBought = false;
-        switch(id)
+        switch (id)
         {
             case 1:
                 price = 2;
@@ -138,7 +158,7 @@ public class GameControllerScript : MonoBehaviour
                     upgradeBought = true;
                     SPCount -= price;
                 }
-                //TGScript.ShieldUpgradeBought(upgradeBought);
+                TGScript.ShieldUpgradeBought(upgradeBought);
                 break;
             case 2:
                 price = 2;
@@ -148,7 +168,7 @@ public class GameControllerScript : MonoBehaviour
                     upgradeBought = true;
                     SPCount -= price;
                 }
-                //TGScript.SpeedUpgradeBought(upgradeBought);
+                TGScript.SpeedUpgradeBought(upgradeBought);
                 break;
             case 3:
                 price = 3;
@@ -158,7 +178,7 @@ public class GameControllerScript : MonoBehaviour
                     upgradeBought = true;
                     SPCount -= price;
                 }
-                //TGScript.StrengthUpgradeBought(upgradeBought);
+                TGScript.StrengthUpgradeBought(upgradeBought);
                 break;
             case 4:
                 price = 4;
@@ -168,14 +188,37 @@ public class GameControllerScript : MonoBehaviour
                     upgradeBought = true;
                     SPCount -= price;
                 }
-                //TGScript.CapacityUpgradeBought(upgradeBought);
+                TGScript.CapacityUpgradeBought(upgradeBought);
                 break;
             default:
                 Debug.Log("You bought something that wasn't supposed to be bought");
                 upgradeBought = false;
                 break;
         }
-        //TGScript.UpdateUISP(int SPCount);
+        TGScript.UpdateUISP(SPCount);
         return upgradeBought;
+    }
+    public void ReachedGoal()
+    {
+        spawnEnemies = false;
+        level++;
+        if(level < 4)
+        {
+            StartCoroutine(NextLevelTransition());
+        }
+        else if(level == 4 && includeBoss)
+        {
+            Instantiate(BossHandler);
+            Debug.Log("Bosu desu");
+        }
+    }
+
+    IEnumerator NextLevelTransition()
+    {
+        Debug.Log("Starting next level...");
+        yield return new WaitForSeconds(5.0f);
+        Debug.Log("...now");
+        SceneManager.LoadScene("Game" + level);
+        spawnEnemies = true;
     }
 }

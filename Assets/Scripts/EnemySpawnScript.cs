@@ -4,91 +4,84 @@ using System.Collections.Generic;
 
 public class EnemySpawnScript : MonoBehaviour
 {
-    public GameObject AsteroidPF;
-    public GameObject SatellitePF;
-    public GameObject Quick;
-    public GameObject Slow;
-    public GameObject Slower;
-
-    GameObject enemy;
     float spawnTimer;
     public float nextEnemyBatchIn;
     int normalEnemyCount;
-
-    public bool spawnEnemies;
 
     public float maxZRange;
     public float minZRange;
 
     Quaternion rotation;
 
-    List<GameObject> EnemyList1 = new List<GameObject>();
-    List<GameObject> EnemyList2 = new List<GameObject>();
-    List<GameObject> EnemyList3 = new List<GameObject>();
-    List<GameObject> EnemyList4 = new List<GameObject>();
+    public List<GameObject> EnemyList1 = new List<GameObject>();
+    public List<GameObject> EnemyList2 = new List<GameObject>();
+    public List<GameObject> EnemyList3 = new List<GameObject>();
+    public List<GameObject> EnemyList4 = new List<GameObject>();
 
     List<GameObject> enemyList;
-    GameObject level;
+    GameObject marker;
 
-    float checkpoint1;
-    float checkpoint2;
-    float checkpoint3;
-    float checkpoint4;
+    GameObject checkpoint1;
+    GameObject checkpoint2;
+    GameObject checkpoint3;
+    GameObject checkpoint4;
+
+    GameObject GameController;
+    GameControllerScript GCScript;
+    int level;
 
     void Awake()
     {
         spawnTimer = 0;
         //normalEnemyCount = 1;
 
-        PrepareSpawnList1();
-        PrepareSpawnList2();
-        PrepareSpawnList3();
-        PrepareSpawnList4();
+        //PrepareSpawnList1();
+        //PrepareSpawnList2();
+        //PrepareSpawnList3();
+        //PrepareSpawnList4();
 
-        level = GameObject.FindWithTag("BG");
+        marker = GameObject.FindWithTag("LevelHandler");
 
-        checkpoint1 = GameObject.Find("Checkpoint1").transform.position.x; //338;
-        checkpoint2 = GameObject.Find("Checkpoint2").transform.position.x; //190;
-        checkpoint3 = GameObject.Find("Checkpoint3").transform.position.x; //42;
-        checkpoint4 = GameObject.Find("Checkpoint4").transform.position.x; //-106;
+        checkpoint1 = GameObject.Find("Checkpoint1");
+        checkpoint2 = GameObject.Find("Checkpoint2");
+        checkpoint3 = GameObject.Find("Checkpoint3");
+        checkpoint4 = GameObject.Find("Checkpoint4");
 
-        Debug.Log(checkpoint1);
-        Debug.Log(checkpoint2);
-        Debug.Log(checkpoint3);
-        Debug.Log(checkpoint4);
+        GameController = GameObject.Find("GameController");
+        GCScript = GameController.GetComponent<GameControllerScript>();
     }
     void Update()
     {
-        if (spawnEnemies)
+        if (GCScript.spawnEnemies)
         {
             if (spawnTimer <= 0)
             {
                 //NewEnemy();
                 //spawnTimer = nextEnemyIn;
-                if(level.transform.position.x > checkpoint1)
+                if (marker.transform.position.x <= checkpoint1.transform.position.x)
                 {
                     enemyList = EnemyList1;
                     Debug.Log("1");
                 }
-                else if(level.transform.position.x <= checkpoint1 && level.transform.position.x > checkpoint2)
+                else if(marker.transform.position.x <= checkpoint2.transform.TransformPoint(transform.position).x && marker.transform.position.x > checkpoint1.transform.position.x)
                 {
                     enemyList = EnemyList2;
                     Debug.Log("2");
                 }
-                else if(level.transform.position.x <= checkpoint2 && level.transform.position.x > checkpoint3)
+                else if(marker.transform.position.x <= checkpoint3.transform.position.x && marker.transform.position.x > checkpoint2.transform.position.x)
                 {
                     enemyList = EnemyList3;
                     Debug.Log("3");
                 }
-                else if(level.transform.position.x <= checkpoint3 && level.transform.position.x > checkpoint4)
+                else if(marker.transform.position.x <= checkpoint4.transform.position.x && marker.transform.position.x > checkpoint3.transform.position.x)
                 {
                     enemyList = EnemyList4;
                     Debug.Log("4");
                 }
-                else if(level.transform.position.x <= checkpoint4)
+                else if(marker.transform.position.x > checkpoint4.transform.position.x)
                 {
-                    Debug.Log("Boss Area");
-                    enemyList = EnemyList4;
+                    GCScript.ReachedGoal();
+                    Debug.Log("GoAL");
                 }
                 else
                 {
@@ -143,7 +136,7 @@ public class EnemySpawnScript : MonoBehaviour
         Instantiate(enemy, spawnPosition, rotation);
     }*/
 
-    void PrepareSpawnList1()
+    /*void PrepareSpawnList1()
     {
         EnemyList1.Add(AsteroidPF);
         EnemyList1.Add(AsteroidPF);
@@ -172,7 +165,7 @@ public class EnemySpawnScript : MonoBehaviour
         EnemyList4.Add(Quick);
         EnemyList4.Add(Slow);
         EnemyList4.Add(Slower);
-    }
+    }*/
 
     IEnumerator WaitForEnemySpawn(List<GameObject> list)
     {
@@ -191,7 +184,7 @@ public class EnemySpawnScript : MonoBehaviour
             {
                 rotation = Quaternion.identity;
             }
-            Instantiate(obj, new Vector3(Random.Range(30, 34), 0, Random.Range(minZRange, maxZRange)), rotation);
+            Instantiate(obj, new Vector3(Random.Range(38, 50), 0, Random.Range(minZRange, maxZRange)), rotation);
         }
     }
 }

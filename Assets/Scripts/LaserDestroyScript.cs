@@ -16,7 +16,7 @@ public class LaserDestroyScript : MonoBehaviour
     public GameObject newLaser;
 
     RaycastHit hit;
-    Vector3 tempTarget = new Vector3(50, 0, 0);
+    Vector3 tempTarget = new Vector3(10f, 0, 0);
 
     bool checkedRay = false;
 

@@ -13,13 +13,18 @@ public class ScrollScript : MonoBehaviour
 
     void Update()
     {
-        if (transform.position.x <= -297.7)
+        /*if (transform.position.x <= -297.7)
         {
             transform.position = startPosition;
+            if (gameObject.tag == "BG")
+            {
+                turnsB4Level++;
+                Debug.Log(turnsB4Level);
+            }
         }
         else
-        {
+        {*/
             transform.position += -Camera.main.transform.right * speed * Time.deltaTime;
-        }
+        //}
     }
 }

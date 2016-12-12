@@ -21,13 +21,9 @@ public class ExplodingMissileScript : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        if (other.tag != "Player" && other.tag != "Projectile")
+        if(other.tag != "Player" && other.tag != "Projectile")
         {
-            BehaviourScript BScript = other.GetComponent<BehaviourScript>();
-            if (BScript != null)
-            {
-                BScript.DamageTaken(true);
-            }
+            Destroy(other.gameObject);
         }
     }
 }
